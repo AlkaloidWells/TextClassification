@@ -1,0 +1,48 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environment
+.venv/
+venv/
+env/
+
+# Jupyter Notebook checkpoints
+.ipynb_checkpoints/
+
+# IDE and editor settings
+.vscode/
+.idea/
+*.sublime-workspace
+*.sublime-project
+
+# Data and model files
+data/
+*.h5
+*.hdf5
+*.pkl
+*.joblib
+*.sav
+*.pt
+*.onnx
+*.tflite
+*.pb
+
+# Logs and debug files
+*.log
+logs/
+*.out
+*.err
+*.trace
+
+# Environment and configuration files
+.env
+.env.*
+config.yaml
+
+# Build directories
+build/
+dist/
+*.egg-info/
+.e
