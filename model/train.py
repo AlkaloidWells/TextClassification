@@ -56,12 +56,12 @@ def train():
     print("Tuned Model Accuracy Score:", accuracy_score(y_test, y_pred))
 
     # Save the tuned model
-    with open(get_absolute_path('model/pretrained/category_classifier_model.pkl'), 'wb') as model_file:
+    with open(get_absolute_path('model/pretrained/file1/category_classifier_model.pkl'), 'wb') as model_file:
         pickle.dump(best_pipeline, model_file)
 
     # Save category mapping
     category_mapping = data[['category_id', 'category_name']].drop_duplicates().set_index('category_id').to_dict()['category_name']
-    with open(get_absolute_path('model/pretrained/category_mapping.pkl'), 'wb') as mapping_file:
+    with open(get_absolute_path('model/pretrained/file1/category_mapping.pkl'), 'wb') as mapping_file:
         pickle.dump(category_mapping, mapping_file)
 
     print("Model and category mapping saved successfully.")

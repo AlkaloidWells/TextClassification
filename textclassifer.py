@@ -3,8 +3,8 @@ import pandas as pd
 from model.utils import get_absolute_path, TextCleaner, SpellCheckerPipeline
 
 def classify_query(query): 
-    model_file = get_absolute_path('model/pretrained/category_classifier_model.pkl')
-    mapping_file = get_absolute_path('model/pretrained/category_mapping.pkl')
+    model_file = get_absolute_path('model/pretrained/file1/category_classifier_model.pkl')
+    mapping_file = get_absolute_path('model/pretrained/file1/category_mapping.pkl')
 
     # Load the model
     with open(model_file, 'rb') as model_file:
