@@ -4,13 +4,15 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.linear_model import LogisticRegression
 from sklearn.pipeline import Pipeline
 from sklearn.metrics import classification_report, accuracy_score
-from sklearn.compose import ColumnTransformer
 from imblearn.pipeline import Pipeline as IMBPipeline
-from imblearn.over_sampling import SMOTE
+from imblearn.over_sampling import RandomOverSampler
+from imblearn.under_sampling import RandomUnderSampler
+from imblearn.combine import SMOTEENN
 import pickle
 from model.utils import TextCleaner, get_absolute_path
 from sklearn.model_selection import StratifiedShuffleSplit
 import numpy as np
+from collections import Counter
 
 def train():
     # Load and prepare the e-commerce dataset
@@ -22,8 +24,9 @@ def train():
     # Apply text cleaning
     data['text'] = TextCleaner().fit_transform(data['text'])
 
-    # Filter out classes with fewer than 2 samples
-    data = data.groupby('category_id').filter(lambda x: len(x) > 1)
+    # Filter out classes with very few samples (less than 5)
+    min_samples_per_class = 5
+    data = data.groupby('category_id').filter(lambda x: len(x) >= min_samples_per_class)
 
     # Print class distribution before balancing
     print("Class distribution before balancing:")
@@ -36,11 +39,14 @@ def train():
     # Split data into training and test sets
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42, stratify=y)
 
-    # Build a classification pipeline with SMOTE
-    # Note: SMOTE must be applied after TF-IDF transformation
+    # Calculate sampling strategy
+    # Set a target number that's achievable for all classes
+    sampling_strategy = 'not majority'  # This will balance all classes except the majority class
+
+    # Build a classification pipeline with RandomOverSampler
     pipeline = IMBPipeline([
         ('tfidf', TfidfVectorizer(max_features=5000, stop_words='english', ngram_range=(1, 2))),
-        ('smote', SMOTE(random_state=42, k_neighbors=min(5, min(np.bincount(y_train))))),
+        ('sampler', RandomOverSampler(sampling_strategy=sampling_strategy, random_state=42)),
         ('clf', LogisticRegression(max_iter=1000, solver='liblinear'))
     ])
 
@@ -53,11 +59,18 @@ def train():
         X_train_cv, X_val_cv = X_train.iloc[train_idx], X_train.iloc[val_idx]
         y_train_cv, y_val_cv = y_train.iloc[train_idx], y_train.iloc[val_idx]
         
-        pipeline.fit(X_train_cv, y_train_cv)
-        scores.append(pipeline.score(X_val_cv, y_val_cv))
+        try:
+            pipeline.fit(X_train_cv, y_train_cv)
+            scores.append(pipeline.score(X_val_cv, y_val_cv))
+        except Exception as e:
+            print(f"Warning: Error during cross-validation: {str(e)}")
+            continue
     
-    print("Stratified Shuffle Cross-validation scores:", scores)
-    print("Mean Stratified Shuffle Cross-validation accuracy:", np.mean(scores))
+    if scores:
+        print("Stratified Shuffle Cross-validation scores:", scores)
+        print("Mean Stratified Shuffle Cross-validation accuracy:", np.mean(scores))
+    else:
+        print("Warning: No valid cross-validation scores obtained")
 
     # Hyperparameter tuning with StratifiedKFold
     stratified_kf = StratifiedKFold(n_splits=3)
@@ -78,25 +91,34 @@ def train():
             X_train_fold, X_val_fold = X_train.iloc[train_idx], X_train.iloc[val_idx]
             y_train_fold, y_val_fold = y_train.iloc[train_idx], y_train.iloc[val_idx]
             
-            pipeline.fit(X_train_fold, y_train_fold)
-            score = pipeline.score(X_val_fold, y_val_fold)
-            fold_scores.append(score)
+            try:
+                pipeline.fit(X_train_fold, y_train_fold)
+                score = pipeline.score(X_val_fold, y_val_fold)
+                fold_scores.append(score)
+            except Exception as e:
+                print(f"Warning: Error during parameter tuning: {str(e)}")
+                continue
         
-        mean_score = np.mean(fold_scores)
-        if mean_score > best_score:
-            best_score = mean_score
-            best_params = {'C': C}
-            best_pipeline = pipeline
+        if fold_scores:
+            mean_score = np.mean(fold_scores)
+            if mean_score > best_score:
+                best_score = mean_score
+                best_params = {'C': C}
+                best_pipeline = pipeline
     
-    print("Best parameters found:", best_params)
+    if best_pipeline is None:
+        print("Warning: No valid parameter combination found. Using default parameters.")
+        best_pipeline = pipeline
+    else:
+        print("Best parameters found:", best_params)
 
     # Train final model with best parameters
     best_pipeline.fit(X_train, y_train)
 
-    # Print class distribution after SMOTE (for training data)
+    # Print class distribution after sampling (for training data)
     tfidf_train = best_pipeline.named_steps['tfidf'].transform(X_train)
-    _, y_resampled = best_pipeline.named_steps['smote'].fit_resample(tfidf_train, y_train)
-    print("\nClass distribution after SMOTE (training data):")
+    _, y_resampled = best_pipeline.named_steps['sampler'].fit_resample(tfidf_train, y_train)
+    print("\nClass distribution after sampling (training data):")
     print(pd.Series(y_resampled).value_counts())
 
     # Evaluate the tuned model on the test set
@@ -105,12 +127,12 @@ def train():
     print("Tuned Model Accuracy Score:", accuracy_score(y_test, y_pred))
 
     # Save the tuned model
-    with open(get_absolute_path('model/pretrained/file1/category_classifier_model.pkl'), 'wb') as model_file:
+    with open(get_absolute_path('model/pretrained/file2/category_classifier_model.pkl'), 'wb') as model_file:
         pickle.dump(best_pipeline, model_file)
 
     # Save category mapping
     category_mapping = data[['category_id', 'category_name']].drop_duplicates().set_index('category_id').to_dict()['category_name']
-    with open(get_absolute_path('model/pretrained/file1/category_mapping.pkl'), 'wb') as mapping_file:
+    with open(get_absolute_path('model/pretrained/file2/category_mapping.pkl'), 'wb') as mapping_file:
         pickle.dump(category_mapping, mapping_file)
 
     print("Model and category mapping saved successfully.")
