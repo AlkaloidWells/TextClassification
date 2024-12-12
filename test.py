@@ -1,18 +1,18 @@
 from model.data import *
-from model.train2 import *
-from textclassifer2 import *
+from model.trainCNN import *
+from textclassiferCNN import *
 from model.utils import *
-import model.train  as trl
-import  textclassifer as cl1
-import model.train2  as trc
-import  textclassifer2 as cl2
-import model.train3  as trs
-import  textclassifer3 as cl3
+import model.trainLR  as trl
+import  textclassiferLR as cl1
+import model.trainCNN  as trc
+import  textclassiferCNN as cl2
+import model.trainLRS  as trs
+import  textclassiferLRS as cl3
 
 # dataframe = fetch_and_save_data()
 # print(dataframe.head())
 
-query ="sofas"
+query ="android phone"
 print("search query: ",query, "\n")
 
 
