@@ -1,22 +1,27 @@
 import pickle
 import pandas as pd
-from model.utils import get_absolute_path, TextCleaner, SpellCheckerPipeline
+from model.utils import get_absolute_path, TextCleaner
 
 def classify_query(query): 
-    model_file = get_absolute_path('model/pretrained/file2/category_classifier_model.pkl')
-    mapping_file = get_absolute_path('model/pretrained/file2/category_mapping.pkl')
+    model_file = get_absolute_path('model/pretrained/file3/category_classifier_model.pkl')
+    mapping_file = get_absolute_path('model/pretrained/file3/label_encoder.pkl')
+    category_mapping_file = get_absolute_path('model/pretrained/file3/category_mapping.pkl')
 
     # Load the model
     with open(model_file, 'rb') as model_file:
         loaded_model = pickle.load(model_file)
 
-    # Load the category mapping
+    # Load the LabelEncoder
     with open(mapping_file, 'rb') as mapping_file:
+        label_encoder = pickle.load(mapping_file)
+
+    # Load the category mapping
+    with open(category_mapping_file, 'rb') as mapping_file:
         category_mapping = pickle.load(mapping_file)
-    
-    # Clean the new query
+
+    # Clean the query
     cleaned_query = TextCleaner.clean_text(query)
-    
+
     # Predict probabilities for each category
     probabilities = loaded_model.predict_proba([cleaned_query])[0]
 
@@ -26,16 +31,10 @@ def classify_query(query):
         'probability': probabilities
     })
 
-    # Map category IDs to names
-    categories_df['category_name'] = categories_df['category_id'].map(category_mapping)
+    # Map encoded category ID to descriptive category names
+    categories_df['category_name'] = categories_df['category_id'].map(lambda x: label_encoder.inverse_transform([x])[0])
 
     # Sort by probability and get the top 2 categories
     top_categories = categories_df.sort_values(by='probability', ascending=False).head(2)
 
-    return top_categories.reset_index(drop=True)  # Return a DataFrame with top 2 categories
-
-# Example usage
-# if __name__ == "__main__":
-#     query = "Example query here"
-#     top_categories = classify_query(query)
-#     print(top_categories)
+    return top_categories.reset_index(drop=True)
