@@ -43,7 +43,8 @@ def run_train_rf():
 
 if __name__ == "__main__":
     run_train_lr()
-    run_train_cnn()
     run_train_lrs()
-    run_train_xb()
+    run_train_cnn()
     run_train_rf()
+    run_train_xb()
+    
