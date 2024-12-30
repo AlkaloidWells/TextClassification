@@ -15,6 +15,7 @@ You can install the required packages using the following command:
 pip install -r requirements.txt
 ```
 
+```sh
 .
 ├── Classifiers
 │   ├── textclassiferLR.py
@@ -40,13 +41,15 @@ pip install -r requirements.txt
 ├── testCF.py
 ├── requirements.txt
 └── README.md
-
+```
 
 
 ## Training the Models
 To train the models, run the testTR.py script. This script checks if the model directories exist and are not empty. If a directory does not exist or is empty, it creates the directory and trains the corresponding model.
 
-'''python testCF.py'''
+```sh
+ python testTR.py
+```
 
 
 The script will print messages indicating the progress of the training process for each model.
@@ -54,8 +57,9 @@ The script will print messages indicating the progress of the training process f
 Testing the Classifiers
 To test the classifiers, run the testCF.py script. This script uses the trained models to classify a sample query and prints the results for each model.
 
+```sh
 python testCF.py
-
+```
 The script will print the classification results for the sample query using each of the trained models.
 
 Example Usage
