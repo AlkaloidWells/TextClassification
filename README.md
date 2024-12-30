@@ -68,6 +68,7 @@ Training the Models
 
 ### Output:
 
+```sh
 Checking and training Logistic Regression model if needed...
 Training model and saving to models/fileLR...
 ...
@@ -83,11 +84,13 @@ Training model and saving to models/fileXB...
 Checking and training Random Forest model if needed...
 Training model and saving to models/fileRF...
 ...
-
+```
 
  ## Testing the Classifiers
 
 ### Output:
+
+```sh
 Model 1 (Logistic Regression without SMOTE) results:
    category_id  probability category_name
 0            1     0.75     Electronics
@@ -112,7 +115,7 @@ Model 5 (Random Forest) results:
    category_id  probability category_name
 0            1     0.88     Electronics
 1            2     0.12     Mobile Phones
-
+```
 
 
 
