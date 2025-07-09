@@ -16,8 +16,9 @@ from collections import Counter
 
 def train():
     # Load and prepare the e-commerce dataset
+    print("////////////////////////////////////////", get_absolute_path('DataSet/product_data.csv'))
     data = pd.read_csv(get_absolute_path('DataSet/product_data.csv'))
-
+    # print(get_absolute_path('DataSet/product_data.csv'))
     # Combine 'product_name' and 'product_description' for feature text
     data['text'] = data['product_name'] + ' ' + data['product_description']
 
